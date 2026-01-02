@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// Imagens
+// --- IMAGENS ---
+// Certifique-se que estes arquivos existem EXATAMENTE com estes nomes na pasta assets
 import bannerImg01 from '~/assets/imagem01.jpg'
 import bannerImg02 from '~/assets/imagem02.jpg'
 import bannerImg03 from '~/assets/imagem03.jpg'
@@ -77,6 +78,7 @@ const setBanner = (index: number) => {
         </div>
 
         <div class="grid md:grid-cols-3 gap-8 mb-16">
+
           <div class="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-xl transition duration-300 group border border-gray-100">
             <div class="h-48 overflow-hidden relative">
               <img :src="pimentadoreino" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" alt="Pimenta do Reino">
