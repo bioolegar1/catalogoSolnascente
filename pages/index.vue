@@ -1,25 +1,28 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 
-const client = useSupabaseClient()
+// Importação do Logo e Imagens
+import logo from '~/assets/solnascente-logo.svg'
+import bannerImg01 from '~/assets/imagem01.jpg'
+import bannerImg02 from '~/assets/imagem02.jpg'
+import bannerImg03 from '~/assets/imagem03.jpg'
 
-// --- ESTADOS DO SISTEMA ---
+// ... (Resto do script continua igual ao anterior) ...
+// (Apenas certifique-se de manter o script que você já tem, importando o logo)
+
+const client = useSupabaseClient()
 const loading = ref(true)
 const products = ref<any[]>([])
 const search = ref('')
 const selectedCategory = ref('')
 const categories = ref<string[]>([])
-
-// --- ESTADO DO MODAL ---
 const selectedProduct = ref<any>(null)
-const activeImage = ref('') // Estado para a imagem em destaque no modal
-
-// --- ESTADOS DO BANNER ---
+const activeImage = ref('')
 const currentBanner = ref(0)
 const banners = [
-  { id: 1, title: 'Temperos Frescos', subtitle: 'Direto do produtor para sua mesa', color: 'bg-green-700', icon: '🌿' },
-  { id: 2, title: 'Ofertas Especiais', subtitle: 'Confira nossos preços de atacado', color: 'bg-orange-600', icon: '🔥' },
-  { id: 3, title: 'Entrega Rápida', subtitle: 'Enviamos para todo o Brasil', color: 'bg-blue-600', icon: '🚚' }
+  { id: 1, title: 'Temperos Frescos', subtitle: 'Direto do produtor para sua mesa', image: bannerImg01, icon: '🌿' },
+  { id: 2, title: 'Ofertas Especiais', subtitle: 'Confira nossos preços de atacado', image: bannerImg02, icon: '🔥' },
+  { id: 3, title: 'Entrega Rápida', subtitle: 'Enviamos para todo o Brasil', image: bannerImg03, icon: '🚚' }
 ]
 
 let bannerInterval: any = null
@@ -48,7 +51,6 @@ const extractCategories = (items: any[]) => {
   categories.value = [...new Set(cats)].sort()
 }
 
-// --- FILTRAGEM VITRINE ---
 const filteredProducts = computed(() => {
   return products.value.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(search.value.toLowerCase())
@@ -57,7 +59,6 @@ const filteredProducts = computed(() => {
   })
 })
 
-// --- PRODUTOS RELACIONADOS (MODAL) ---
 const relatedProducts = computed(() => {
   if (!selectedProduct.value) return []
   let list = products.value.filter(p =>
@@ -74,7 +75,6 @@ const relatedProducts = computed(() => {
   return list.slice(0, 4)
 })
 
-// --- LÓGICA DO BANNER ---
 const startBannerRotation = () => {
   bannerInterval = setInterval(() => {
     currentBanner.value = (currentBanner.value + 1) % banners.length
@@ -91,12 +91,9 @@ const setBanner = (index: number) => {
   startBannerRotation()
 }
 
-// --- AÇÕES ---
 const openProduct = (item: any) => {
   selectedProduct.value = item
-  // Define a imagem principal inicial
   activeImage.value = item.image_url || ''
-
   const modalContent = document.getElementById('modal-content')
   if (modalContent) modalContent.scrollTop = 0
 }
@@ -105,29 +102,20 @@ const closeProduct = () => {
   selectedProduct.value = null
   activeImage.value = ''
 }
-
-// (Função requestQuote removida do uso no modal, mas mantida caso precise no futuro)
 </script>
 
 <template>
   <div class="flex flex-col relative">
 
     <div class="relative w-full h-64 md:h-[400px] overflow-hidden bg-gray-900 group">
-      <div
-          class="flex h-full transition-transform duration-700 ease-in-out"
-          :style="{ transform: `translateX(-${currentBanner * 100}%)` }"
-      >
-        <div
-            v-for="banner in banners"
-            :key="banner.id"
-            class="w-full h-full flex-shrink-0 flex items-center justify-center text-white p-8 relative"
-            :class="banner.color"
-        >
-          <div class="absolute inset-0 bg-black/10"></div>
-          <div class="text-center animate-fade-in-up relative z-10">
+      <div class="flex h-full transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${currentBanner * 100}%)` }">
+        <div v-for="banner in banners" :key="banner.id" class="w-full h-full flex-shrink-0 flex items-center justify-center text-white p-8 relative">
+          <img :src="banner.image" class="absolute inset-0 w-full h-full object-cover" alt="Banner Promocional" />
+          <div class="absolute inset-0 bg-black/20"></div>
+          <div class="text-center animate-fade-in-up relative z-10 drop-shadow-xl">
             <div class="text-6xl md:text-8xl mb-4 opacity-90 filter drop-shadow-lg">{{ banner.icon }}</div>
-            <h2 class="text-3xl md:text-6xl font-bold mb-3 shadow-sm tracking-tight">{{ banner.title }}</h2>
-            <p class="text-lg md:text-2xl opacity-95 font-light">{{ banner.subtitle }}</p>
+            <h2 class="text-3xl md:text-6xl font-bold mb-3 tracking-tight drop-shadow-lg">{{ banner.title }}</h2>
+            <p class="text-lg md:text-2xl opacity-95 font-light drop-shadow-md">{{ banner.subtitle }}</p>
           </div>
         </div>
       </div>
@@ -153,7 +141,7 @@ const closeProduct = () => {
 
     <main class="max-w-7xl mx-auto px-4 py-12 w-full">
       <div v-if="loading" class="text-center py-20">
-        <div class="inline-block animate-spin text-4xl mb-4">☀️</div>
+        <img :src="logo" class="inline-block animate-spin h-16 w-16 mb-4 opacity-50" alt="Carregando..." />
         <p class="text-gray-500 font-medium text-lg">Carregando catálogo...</p>
       </div>
 
@@ -164,18 +152,12 @@ const closeProduct = () => {
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        <div
-            v-for="item in filteredProducts"
-            :key="item.id"
-            @click="openProduct(item)"
-            class="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col hover:-translate-y-2 cursor-pointer"
-        >
+        <div v-for="item in filteredProducts" :key="item.id" @click="openProduct(item)" class="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col hover:-translate-y-2 cursor-pointer">
           <div class="h-64 bg-gray-100 relative overflow-hidden">
             <img v-if="item.image_url" :src="item.image_url" class="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out" />
             <div v-else class="w-full h-full flex items-center justify-center text-gray-300 text-5xl bg-gray-50">📷</div>
             <span class="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg">{{ item.category }}</span>
           </div>
-
           <div class="p-6 flex flex-col flex-1 justify-between">
             <div>
               <h3 class="font-bold text-gray-800 text-xl leading-tight mb-2 group-hover:text-green-700 transition">{{ item.name }}</h3>
@@ -185,7 +167,6 @@ const closeProduct = () => {
               </div>
               <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">{{ item.description || 'Produto selecionado com a qualidade e tradição Sol Nascente.' }}</p>
             </div>
-
             <div class="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
               <span class="text-xs font-bold text-green-600 uppercase tracking-wider group-hover:underline">Ver Detalhes</span>
               <span class="text-green-600 group-hover:translate-x-1 transition">→</span>
@@ -197,54 +178,28 @@ const closeProduct = () => {
 
     <div v-if="selectedProduct" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" @click="closeProduct"></div>
-
-      <div
-          id="modal-content"
-          class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden relative z-10 flex flex-col animate-fade-in-up max-h-[95vh] overflow-y-auto"
-      >
-        <button @click="closeProduct" class="absolute top-4 right-4 z-20 bg-white/90 p-2 rounded-full shadow hover:bg-gray-100 text-gray-600 transition">
-          ❌
-        </button>
-
+      <div id="modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden relative z-10 flex flex-col animate-fade-in-up max-h-[95vh] overflow-y-auto">
+        <button @click="closeProduct" class="absolute top-4 right-4 z-20 bg-white/90 p-2 rounded-full shadow hover:bg-gray-100 text-gray-600 transition">❌</button>
         <div class="flex flex-col md:flex-row">
           <div class="w-full md:w-1/2 bg-gray-100 min-h-[400px] flex flex-col">
-
             <div class="flex-1 relative overflow-hidden">
-              <img
-                  v-if="activeImage"
-                  :src="activeImage"
-                  class="w-full h-full object-cover animate-fade-in-up"
-                  :key="activeImage"
-              />
+              <img v-if="activeImage" :src="activeImage" class="w-full h-full object-cover animate-fade-in-up" :key="activeImage" />
               <div v-else class="w-full h-full flex items-center justify-center text-6xl text-gray-300">📷</div>
             </div>
-
-            <div
-                v-if="selectedProduct.gallery && selectedProduct.gallery.length > 1"
-                class="p-4 bg-white border-t flex gap-3 overflow-x-auto"
-            >
-              <button
-                  v-for="(img, idx) in selectedProduct.gallery"
-                  :key="idx"
-                  @click="activeImage = img"
-                  class="w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition hover:opacity-100"
-                  :class="activeImage === img ? 'border-green-600 opacity-100 ring-2 ring-green-100' : 'border-gray-200 opacity-60 hover:border-green-400'"
-              >
+            <div v-if="selectedProduct.gallery && selectedProduct.gallery.length > 1" class="p-4 bg-white border-t flex gap-3 overflow-x-auto">
+              <button v-for="(img, idx) in selectedProduct.gallery" :key="idx" @click="activeImage = img" class="w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition hover:opacity-100" :class="activeImage === img ? 'border-green-600 opacity-100 ring-2 ring-green-100' : 'border-gray-200 opacity-60 hover:border-green-400'">
                 <img :src="img" class="w-full h-full object-cover" />
               </button>
             </div>
           </div>
-
           <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col">
             <div>
               <div class="flex items-center justify-between mb-4">
                 <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{{ selectedProduct.category }}</span>
                 <span class="text-xs text-gray-400 font-mono">ID: {{ selectedProduct.id }}</span>
               </div>
-
               <h2 class="text-4xl font-bold text-gray-900 mb-2 leading-tight">{{ selectedProduct.name }}</h2>
               <p class="text-sm text-gray-500 mb-8 font-mono">Cód Barras: {{ selectedProduct.barcode || '---' }}</p>
-
               <div class="flex gap-4 mb-8 text-sm">
                 <div class="bg-gray-50 px-5 py-3 rounded-xl border border-gray-100 flex-1 text-center">
                   <span class="block text-gray-500 text-xs uppercase font-bold mb-1">Peso Líq.</span>
@@ -255,25 +210,17 @@ const closeProduct = () => {
                   <span class="font-bold text-yellow-800 text-xl">{{ selectedProduct.package_qty ? `${selectedProduct.package_qty} un` : 'Unitário' }}</span>
                 </div>
               </div>
-
               <div class="prose prose-base text-gray-600 mb-10">
                 <h3 class="font-bold text-gray-900 mb-2 text-lg">Sobre o Produto</h3>
                 <p class="leading-relaxed">{{ selectedProduct.description || 'Produto de alta qualidade selecionado especialmente para você, garantindo sabor e satisfação.' }}</p>
               </div>
             </div>
-
           </div>
         </div>
-
         <div class="bg-gray-50 border-t border-gray-100 p-8">
           <h3 class="font-bold text-gray-800 text-xl mb-6 flex items-center gap-2"><span>✨</span> Veja também</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div
-                v-for="related in relatedProducts"
-                :key="related.id"
-                @click="openProduct(related)"
-                class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-green-200 transition group"
-            >
+            <div v-for="related in relatedProducts" :key="related.id" @click="openProduct(related)" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-green-200 transition group">
               <div class="h-32 bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
                 <img v-if="related.image_url" :src="related.image_url" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 <div v-else class="w-full h-full flex items-center justify-center text-gray-300">📷</div>
