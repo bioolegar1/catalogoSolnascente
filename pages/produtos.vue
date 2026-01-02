@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-// Importando o logo para usar no carregamento
 import logo from '~/assets/solnascente-logo.svg'
+
+// Importando imagem para o banner do topo (Você pode escolher qual usar)
+import bannerPage from '~/assets/imagem02.jpg'
 
 const client = useSupabaseClient()
 
@@ -20,7 +22,6 @@ onMounted(async () => {
   await fetchProducts()
 })
 
-// Buscar produtos no Supabase
 const fetchProducts = async () => {
   loading.value = true
   const { data, error } = await client.from('products').select('*').order('name')
@@ -31,13 +32,12 @@ const fetchProducts = async () => {
   loading.value = false
 }
 
-// Extrair categorias únicas para o filtro
 const extractCategories = (items: any[]) => {
   const cats = items.map(i => i.category).filter(Boolean)
   categories.value = [...new Set(cats)].sort()
 }
 
-// --- LÓGICA DE FILTRAGEM ---
+// --- FILTRAGEM ---
 const filteredProducts = computed(() => {
   return products.value.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(search.value.toLowerCase())
@@ -46,15 +46,13 @@ const filteredProducts = computed(() => {
   })
 })
 
-// --- PRODUTOS RELACIONADOS (MODAL) ---
+// --- RELACIONADOS ---
 const relatedProducts = computed(() => {
   if (!selectedProduct.value) return []
-  // Primeiro tenta achar da mesma categoria
   let list = products.value.filter(p =>
       p.category === selectedProduct.value.category &&
       p.id !== selectedProduct.value.id
   )
-  // Se tiver poucos, completa com outros aleatórios
   if (list.length < 4) {
     const others = products.value.filter(p =>
         p.category !== selectedProduct.value.category &&
@@ -79,7 +77,7 @@ const closeProduct = () => {
 }
 
 const requestQuote = (item: any) => {
-  const phone = '5562991122981' // Número atualizado
+  const phone = '5562991122981'
   const message = `Olá! Gostaria de fazer um orçamento do produto: *${item.name}* (Cód: ${item.barcode || 'N/A'}).`
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
   window.open(url, '_blank')
@@ -89,9 +87,15 @@ const requestQuote = (item: any) => {
 <template>
   <div class="bg-gray-50 min-h-screen">
 
-    <div class="bg-white py-12 text-center shadow-sm border-b border-gray-100">
-      <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mb-2">Nossos Produtos</h1>
-      <p class="text-gray-500 text-lg">Qualidade selecionada para a sua cozinha.</p>
+    <div class="relative h-[300px] md:h-[350px] flex items-center justify-center bg-gray-900 overflow-hidden">
+      <img :src="bannerPage" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Banner Produtos" />
+
+      <div class="relative z-10 text-center text-white px-4 animate-fade-in-up">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg tracking-tight">Nossos Produtos</h1>
+        <p class="text-lg md:text-2xl font-light opacity-95 drop-shadow-md max-w-2xl mx-auto">
+          Qualidade selecionada e sabor autêntico para a sua cozinha.
+        </p>
+      </div>
     </div>
 
     <div class="sticky top-0 z-30 bg-gray-50/95 backdrop-blur-sm py-4 px-4 mb-8 shadow-sm transition-all border-b border-gray-200">
@@ -99,10 +103,11 @@ const requestQuote = (item: any) => {
         <div class="flex flex-col md:flex-row gap-4 items-center">
 
           <div class="flex-1 w-full relative group">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
             <input
                 v-model="search"
                 type="text"
-                placeholder="   Busque por nome..."
+                placeholder="Busque por nome..."
                 class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-300 bg-white shadow-sm focus:border-green-500 focus:ring-4 focus:ring-green-100 outline-none transition text-lg"
             />
           </div>
@@ -144,9 +149,9 @@ const requestQuote = (item: any) => {
             @click="openProduct(item)"
             class="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col hover:-translate-y-2 cursor-pointer"
         >
-          <div class="h-64 bg-gray-100 relative overflow-hidden">
+          <div class="h-64 bg-gray-100 relative overflow-hidden flex items-center justify-center">
             <img v-if="item.image_url" :src="item.image_url" class="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out" />
-            <div v-else class="w-full h-full flex items-center justify-center text-gray-300 text-5xl bg-gray-50">📷</div>
+            <div v-else class="text-gray-300 text-5xl">📷</div>
             <span class="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg">{{ item.category }}</span>
           </div>
 
@@ -177,9 +182,9 @@ const requestQuote = (item: any) => {
 
         <div class="flex flex-col md:flex-row">
           <div class="w-full md:w-1/2 bg-gray-100 min-h-[400px] flex flex-col">
-            <div class="flex-1 relative overflow-hidden">
+            <div class="h-64 md:h-[500px] w-full relative overflow-hidden flex items-center justify-center bg-white">
               <img v-if="activeImage" :src="activeImage" class="w-full h-full object-cover animate-fade-in-up" :key="activeImage" />
-              <div v-else class="w-full h-full flex items-center justify-center text-6xl text-gray-300">📷</div>
+              <div v-else class="text-6xl text-gray-300">📷</div>
             </div>
             <div v-if="selectedProduct.gallery && selectedProduct.gallery.length > 1" class="p-4 bg-white border-t flex gap-3 overflow-x-auto">
               <button v-for="(img, idx) in selectedProduct.gallery" :key="idx" @click="activeImage = img" class="w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition hover:opacity-100" :class="activeImage === img ? 'border-green-600 opacity-100 ring-2 ring-green-100' : 'border-gray-200 opacity-60 hover:border-green-400'">
