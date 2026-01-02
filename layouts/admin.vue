@@ -1,16 +1,13 @@
 <template>
-  <div class="min-h-screen flex bg-gray-50">
-    <aside class="w-64 bg-white shadow-md hidden md:block">
-      <div class="p-6">
-        <h1 class="text-2xl font-bold text-green-600">Sol Nascente</h1>
+  <div class="min-h-screen bg-gray-50 font-sans">
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-green-700">Sol Nascente Admin</h1>
+        <span class="text-xs text-gray-400 uppercase font-semibold">Sistema de Catálogo</span>
       </div>
-      <nav class="mt-6 px-4 space-y-2">
-        <NuxtLink to="/admin" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Dashboard</NuxtLink>
-        <NuxtLink to="/admin/produtos" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Produtos</NuxtLink>
-      </nav>
-    </aside>
+    </header>
 
-    <main class="flex-1 p-8">
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
       <slot />
     </main>
   </div>
