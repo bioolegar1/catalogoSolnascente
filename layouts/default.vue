@@ -22,7 +22,9 @@ const route = useRoute()
         <nav class="hidden md:flex gap-8 text-sm font-medium text-gray-600">
           <NuxtLink to="/" class="hover:text-green-600 transition" :class="{ 'text-green-700 font-bold': route.path === '/' }">Home</NuxtLink>
           <NuxtLink to="/historia" class="hover:text-green-600 transition" active-class="text-green-700 font-bold">Nossa História</NuxtLink>
-          <NuxtLink to="/" class="hover:text-green-600 transition">Produtos</NuxtLink>
+
+          <NuxtLink to="/produtos" class="hover:text-green-600 transition" active-class="text-green-700 font-bold">Produtos</NuxtLink>
+
           <NuxtLink to="/contato" class="hover:text-green-600 transition" active-class="text-green-700 font-bold">Contato</NuxtLink>
         </nav>
 
@@ -50,7 +52,6 @@ const route = useRoute()
         <div>
           <div class="flex items-center justify-center md:justify-start gap-4 mb-6">
             <img :src="logo" alt="Logo Rodapé" class="h-12 w-auto" />
-
             <span class="text-2xl font-bold text-white tracking-tight">Sol Nascente</span>
           </div>
           <p class="text-base text-gray-400 max-w-sm mx-auto md:mx-0 leading-relaxed">
@@ -63,10 +64,13 @@ const route = useRoute()
           <ul class="space-y-3 text-base">
             <li><NuxtLink to="/" class="hover:text-green-400 transition">Início</NuxtLink></li>
             <li><NuxtLink to="/historia" class="hover:text-green-400 transition">Nossa História</NuxtLink></li>
+
+            <li><NuxtLink to="/produtos" class="hover:text-green-400 transition">Produtos</NuxtLink></li>
+
             <li><NuxtLink to="/contato" class="hover:text-green-400 transition">Fale Conosco</NuxtLink></li>
             <li class="pt-4 mt-4 border-t border-gray-800">
               <NuxtLink to="/login" class="text-gray-500 hover:text-white transition text-xs flex items-center justify-center md:justify-start gap-1">
-                🔒 Área do Vendedor
+                🔒 Login
               </NuxtLink>
             </li>
           </ul>
