@@ -6,6 +6,8 @@ import bannerImg02 from '~/assets/imagem02.jpg' // Use para "O Início"
 import bannerImg03 from '~/assets/imagem03.jpg' // Use para "Qualidade"
 import logo from '~/assets/solnascente-logo.svg'
 import temperos from '~/assets/temperos.png'
+import pimentadoreino from '~/assets/pimentadoreino.jpg'
+import temperosvarios from '~/assets/temperosvarios.jpg'
 </script>
 
 <template>
@@ -27,7 +29,7 @@ import temperos from '~/assets/temperos.png'
 
         <div class="w-full md:w-1/2 space-y-6">
           <div class="inline-block bg-green-100 text-green-800 font-bold px-3 py-1 rounded-full text-sm mb-2">
-            Desde 2013
+            Desde 1998
           </div>
           <h2 class="text-3xl font-bold text-gray-800">Tudo começou em uma pequena banca...</h2>
           <p class="text-lg text-gray-600 leading-relaxed text-justify">
@@ -84,7 +86,7 @@ import temperos from '~/assets/temperos.png'
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">Logística Ágil</h3>
             <p class="text-gray-600">
-              Atendemos de pequenos comércios a grandes indústrias com rapidez, garantindo que o produto chegue com o aroma preservado.
+              Atendemos de pequenos comércios a grandes atacadistas com rapidez, garantindo que o produto chegue com o aroma preservado.
             </p>
           </div>
         </div>
@@ -95,7 +97,7 @@ import temperos from '~/assets/temperos.png'
       <div class="flex flex-col md:flex-row-reverse items-center gap-12">
 
         <div class="w-full md:w-1/2 space-y-6">
-          <h2 class="text-3xl font-bold text-gray-800">Do campo para a indústria</h2>
+          <h2 class="text-3xl font-bold text-gray-800">Do campo para sua Mesa</h2>
           <p class="text-lg text-gray-600 leading-relaxed text-justify">
             O crescimento foi uma consequência natural do nosso compromisso. Hoje, o Sol Nascente deixou de ser apenas uma banca para se tornar uma referência em distribuição no estado de Goiás.
           </p>
@@ -112,8 +114,8 @@ import temperos from '~/assets/temperos.png'
 
         <div class="w-full md:w-1/2">
           <div class="grid grid-cols-2 gap-4">
-            <img :src="bannerImg03" class="rounded-xl shadow-lg w-full h-64 object-cover transform translate-y-4" alt="Processo de produção" />
-            <img :src="bannerImg01" class="rounded-xl shadow-lg w-full h-64 object-cover transform -translate-y-4" alt="Produtos finalizados" />
+            <img :src="pimentadoreino" class="rounded-xl shadow-lg w-full h-64 object-cover transform translate-y-4" alt="Plantaçao de pimenta" />
+            <img :src="temperosvarios" class="rounded-xl shadow-lg w-full h-64 object-cover transform -translate-y-4" alt="Produtos finalizados" />
           </div>
         </div>
 
@@ -126,7 +128,7 @@ import temperos from '~/assets/temperos.png'
         <h2 class="text-2xl md:text-4xl font-bold leading-tight mb-8">
           "Nosso maior orgulho é saber que, em cada refeição preparada com nossos temperos, existe um pouco da nossa história e muito amor."
         </h2>
-        <img :src="logo" alt="Logo Sol Nascente" class="h-16 w-auto mx-auto brightness-0 invert opacity-80" />
+        <img :src="logo" alt="Logo Sol Nascente" class="h-16 w-auto mx-auto " />
       </div>
     </div>
 

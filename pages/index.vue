@@ -68,7 +68,7 @@ const setBanner = (index: number) => {
       <div class="max-w-6xl mx-auto">
 
         <div class="text-center max-w-4xl mx-auto mb-16 space-y-6 animate-fade-in-up">
-          <span class="text-green-600 font-bold uppercase tracking-wider text-sm">Desde 2013</span>
+          <span class="text-green-600 font-bold uppercase tracking-wider text-sm">Desde 1998</span>
           <h2 class="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">Uma Viagem pelos Sabores</h2>
           <p class="text-lg text-gray-600 leading-relaxed">
             A história dos temperos é uma jornada fascinante que se estende por milênios.
