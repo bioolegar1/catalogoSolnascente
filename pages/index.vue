@@ -66,7 +66,7 @@ const filteredProducts = computed(() => {
         </div>
 
         <NuxtLink to="/login" class="text-sm font-medium text-green-700 hover:text-green-800 border border-green-700 px-4 py-1 rounded-full transition">
-          Área do Vendedor
+          Login
         </NuxtLink>
       </div>
     </header>

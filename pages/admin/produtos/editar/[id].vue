@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 
 definePageMeta({
   middleware: 'auth',
@@ -23,31 +23,11 @@ const productImages = ref<{ name: string, url: string, isMain: boolean }[]>([])
 const form = ref({
   name: '',
   description: '',
-  price: '',        // Preço Unitário
   category: '',
   barcode: '',
   weight: '',
-  stock: '',        // Estoque de CAIXAS
-  package_qty: '',  // Qtd na caixa
-  package_price: '' // Preço da caixa (Calculado)
+  package_qty: '' // CAMPO MANTIDO
 })
-
-// --- LÓGICA DE CÁLCULO AUTOMÁTICO ---
-// Mantemos a mesma lógica da criação: Unitário x Qtd = Total Caixa
-watch(
-    [() => form.value.price, () => form.value.package_qty],
-    ([newPrice, newQty]) => {
-      const unitPrice = parseFloat(String(newPrice).replace(',', '.')) || 0
-      const qty = parseFloat(String(newQty)) || 0
-
-      if (unitPrice > 0 && qty > 0) {
-        const total = unitPrice * qty
-        form.value.package_price = total.toFixed(2)
-      } else {
-        form.value.package_price = ''
-      }
-    }
-)
 
 // --- CARREGAR DADOS ---
 onMounted(async () => {
@@ -77,26 +57,18 @@ const fetchProductData = async () => {
     return
   }
 
-  // Preenche campos de texto/número
+  // Preenche apenas campos relevantes para catálogo
   form.value.name = data.name
   form.value.description = data.description || ''
-  form.value.price = data.price
   form.value.category = data.category
   form.value.barcode = data.barcode || ''
   form.value.weight = data.weight || ''
-  form.value.stock = data.stock // Estoque de caixas
-  form.value.package_qty = data.package_qty
-
-  // O watch vai disparar e calcular o package_price automaticamente,
-  // mas podemos forçar o valor inicial vindo do banco se quisermos garantir
-  if(data.package_price) {
-    form.value.package_price = data.package_price
-  }
+  // Carrega a quantidade da embalagem
+  form.value.package_qty = data.package_qty || ''
 
   // Reconstrói a lista de imagens para visualização
   const images = []
 
-  // 1. Imagem Principal (Se existir)
   if (data.image_url) {
     images.push({
       name: 'Imagem Principal',
@@ -105,10 +77,8 @@ const fetchProductData = async () => {
     })
   }
 
-  // 2. Galeria (Se existir)
   if (data.gallery && Array.isArray(data.gallery)) {
     data.gallery.forEach((url: string, index: number) => {
-      // Evita duplicar se a principal estiver na galeria por algum motivo
       if (url !== data.image_url) {
         images.push({
           name: `Galeria ${index + 1}`,
@@ -123,7 +93,7 @@ const fetchProductData = async () => {
   loading.value = false
 }
 
-// --- UPLOAD DE ARQUIVOS (IGUAL AO CREATE) ---
+// --- UPLOAD DE ARQUIVOS ---
 const handleFileChange = async (event: any) => {
   const files = event.target?.files
   if (!files || files.length === 0) return
@@ -153,7 +123,6 @@ const handleFileChange = async (event: any) => {
         .from('catalog-images')
         .getPublicUrl(uniqueName)
 
-    // Se não tiver imagem nenhuma, a primeira vira principal
     const isFirst = productImages.value.length === 0
     productImages.value.push({
       name: file.name,
@@ -187,7 +156,7 @@ const removeImage = (index: number) => {
 
 // --- ATUALIZAR (UPDATE) ---
 const handleUpdate = async () => {
-  if (!form.value.name || !form.value.price || !form.value.category) {
+  if (!form.value.name || !form.value.category) {
     alert('Preencha os campos obrigatórios (*)')
     return
   }
@@ -197,26 +166,16 @@ const handleUpdate = async () => {
   try {
     let finalCategory = form.value.category
 
-    // Lógica de nova categoria
     if (isCreatingCategory.value) {
       const slug = finalCategory.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
       const { error: catError } = await client.from('categories').insert({ name: finalCategory, slug } as any)
       if (catError) throw catError
     }
 
-    // Separa imagens
     const mainImageObj = productImages.value.find((img) => img.isMain) || productImages.value[0]
-    // Galeria deve conter todas as urls exceto a principal para não duplicar dados desnecessários,
-    // ou todas, dependendo da sua lógica de display. Aqui salvaremos todas na galeria por segurança.
     const allImagesUrl = productImages.value.map((img) => img.url)
 
-    // Tratamento numérico
-    const priceNumber = parseFloat(String(form.value.price).replace(',', '.'))
-    const stockNumber = parseInt(String(form.value.stock)) || 0
-    const packageQtyNumber = parseInt(String(form.value.package_qty)) || 0
-    const packagePriceNumber = form.value.package_price
-        ? parseFloat(String(form.value.package_price).replace(',', '.'))
-        : null
+    const qty = parseInt(String(form.value.package_qty)) || 1
 
     // UPDATE no Supabase
     const { error } = await client
@@ -224,17 +183,14 @@ const handleUpdate = async () => {
         .update({
           name: form.value.name,
           description: form.value.description,
-          price: priceNumber,
           category: finalCategory,
           image_url: mainImageObj?.url || '',
           gallery: allImagesUrl,
           barcode: form.value.barcode,
           weight: form.value.weight,
-          stock: stockNumber, // Atualiza estoque de caixas
-          package_qty: packageQtyNumber,
-          package_price: packagePriceNumber
+          package_qty: qty // Atualiza a quantidade
         } as any)
-        .eq('id', route.params.id) // CLÁUSULA WHERE ID = X
+        .eq('id', route.params.id)
 
     if (error) throw error
 
@@ -253,7 +209,7 @@ const handleUpdate = async () => {
     <div class="mb-6 flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Editar Produto</h1>
-        <p class="text-gray-600">Altere os dados abaixo.</p>
+        <p class="text-gray-600">Altere os dados de divulgação.</p>
       </div>
       <NuxtLink to="/admin" class="text-sm text-gray-500 hover:underline">Voltar para lista</NuxtLink>
     </div>
@@ -310,7 +266,7 @@ const handleUpdate = async () => {
       </div>
 
       <div class="space-y-4">
-        <h3 class="font-bold text-lg text-gray-800 border-b pb-2">📦 Dados Básicos</h3>
+        <h3 class="font-bold text-lg text-gray-800 border-b pb-2">📦 Dados Descritivos</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -325,7 +281,7 @@ const handleUpdate = async () => {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-          <textarea v-model="form.description" rows="2" class="w-full border border-gray-300 p-2 rounded focus:border-green-500 outline-none"></textarea>
+          <textarea v-model="form.description" rows="3" class="w-full border border-gray-300 p-2 rounded focus:border-green-500 outline-none"></textarea>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -333,6 +289,12 @@ const handleUpdate = async () => {
             <label class="block text-sm font-medium text-gray-700 mb-1">Peso</label>
             <input v-model="form.weight" type="text" class="w-full border border-gray-300 p-2 rounded focus:border-green-500 outline-none" />
           </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Qtd. na Embalagem</label>
+            <input v-model="form.package_qty" type="number" class="w-full border border-gray-300 p-2 rounded focus:border-green-500 outline-none" placeholder="Ex: 12" />
+          </div>
+
           <div class="md:col-span-2">
             <div class="flex justify-between items-center mb-1">
               <label class="block text-sm font-medium text-gray-700">Categoria</label>
@@ -346,44 +308,6 @@ const handleUpdate = async () => {
             </select>
           </div>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-        <div class="bg-gray-50 p-4 rounded border border-gray-200 space-y-4">
-          <h4 class="font-bold text-gray-800 flex items-center gap-2"><span>🛒</span> Unitário</h4>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Preço Unitário (R$) *</label>
-            <input v-model="form.price" type="number" step="0.01" class="w-full border border-gray-300 p-2 rounded focus:border-green-500 outline-none text-lg font-bold text-gray-800" />
-          </div>
-        </div>
-
-        <div class="bg-yellow-50 p-4 rounded border border-yellow-200 space-y-4">
-          <h4 class="font-bold text-yellow-800 flex items-center gap-2"><span>📦</span> Caixa / Estoque</h4>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-yellow-800 mb-1">Itens p/ Caixa</label>
-              <input v-model="form.package_qty" type="number" class="w-full border border-yellow-300 p-2 rounded focus:border-yellow-600 outline-none bg-white" />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-yellow-800 mb-1">Estoque (Caixas)</label>
-              <input v-model="form.stock" type="number" class="w-full border border-yellow-300 p-2 rounded focus:border-yellow-600 outline-none bg-white" />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-yellow-800 mb-1">Preço da Caixa (Calculado)</label>
-            <input
-                v-model="form.package_price"
-                type="number"
-                readonly
-                class="w-full border border-yellow-300 bg-gray-100 cursor-not-allowed p-2 rounded outline-none text-lg font-bold text-gray-600"
-            />
-          </div>
-        </div>
-
       </div>
 
       <div class="flex justify-end gap-3 pt-4 border-t">

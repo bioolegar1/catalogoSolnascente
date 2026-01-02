@@ -64,7 +64,7 @@ const logout = async () => {
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
       <div>
         <h1 class="text-3xl font-bold text-gray-800">Meus Temperos</h1>
-        <p class="text-gray-500">Gerencie o estoque e catálogo.</p>
+        <p class="text-gray-500">Gerencie seu catálogo de divulgação.</p>
       </div>
       <div class="flex gap-3">
         <button @click="logout" class="px-4 py-2 text-red-600 hover:bg-red-50 rounded transition font-medium">
@@ -77,12 +77,12 @@ const logout = async () => {
     </div>
 
     <div v-if="loading" class="text-center py-20 text-gray-500 animate-pulse">
-      Carregando estoque...
+      Carregando catálogo...
     </div>
 
     <div v-else-if="products.length === 0" class="text-center py-20 bg-white rounded-lg shadow border border-gray-200">
       <div class="text-6xl mb-4">🧂</div>
-      <h3 class="text-xl font-semibold text-gray-700">Estoque Vazio</h3>
+      <h3 class="text-xl font-semibold text-gray-700">Catálogo Vazio</h3>
       <p class="text-gray-500 mt-2">Clique no botão verde para começar.</p>
     </div>
 
@@ -93,9 +93,6 @@ const logout = async () => {
           <tr>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Produto / Detalhes</th>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Categoria</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Estoque (Caixas)</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Preço Unit.</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Preço Caixa</th>
             <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Ações</th>
           </tr>
           </thead>
@@ -112,7 +109,7 @@ const logout = async () => {
                   <div class="text-sm font-bold text-gray-900">
                     {{ item.name }}
                     <span class="text-gray-500 font-normal text-xs ml-1">
-                      ({{ item.weight || '?' }} - {{ item.package_qty || 1 }} un/cx)
+                      ({{ item.weight || '?' }} - {{ item.package_qty || '-' }} un/cx)
                     </span>
                   </div>
                   <div class="text-xs text-gray-500" v-if="item.barcode">EAN: {{ item.barcode }}</div>
@@ -124,21 +121,6 @@ const logout = async () => {
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                   {{ item.category }}
                 </span>
-            </td>
-
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span :class="item.stock < 5 ? 'text-red-600 font-bold' : 'text-gray-600'">
-                  {{ item.stock }} cx
-                </span>
-            </td>
-
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
-              R$ {{ item.price }}
-            </td>
-
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-700 font-bold bg-yellow-50/50">
-              <span v-if="item.package_price">R$ {{ item.package_price }}</span>
-              <span v-else class="text-gray-400 font-normal">-</span>
             </td>
 
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
